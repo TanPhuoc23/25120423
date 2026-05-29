@@ -6,7 +6,7 @@
 
 using namespace std;
 
-// Dùng seed cố định 423 giống hệt file gốc của bạn để đảm bảo dữ liệu sinh ra đồng nhất
+// Dùng seed cố định 423 đồng bộ với file gốc của nhóm
 mt19937 rng(423);
 
 // ==========================================
@@ -21,7 +21,7 @@ void genInt(int testNum) {
             cout << -50000 + i << "\n";
         }
     } 
-    else if (testNum == 2) { // Test 2: Ngẫu nhiên hoàn toàn (Phân bố đều)
+    else if (testNum == 2) { // Test 2: Ngẫu nhiên hoàn toàn
         uniform_int_distribution<long long> dist(-1000000000LL, 1000000000LL);
         for (int i = 0; i < n; i++) {
             cout << dist(rng) << "\n";
@@ -32,12 +32,14 @@ void genInt(int testNum) {
             cout << 42 << "\n";
         }
     } 
-    else if (testNum == 4) { // Test 4: Mảng răng cưa biến thiên khối lớn - khối nhỏ
-        uniform_int_distribution<long long> high_dist(500000000LL, 1000000000LL);
-        uniform_int_distribution<long long> low_dist(-1000000000LL, -500000000LL);
+    else if (testNum == 4) { // Test 4: Mảng răng cưa đổi dấu tuyệt đối (-a, a, -a, a, ...)
+        uniform_int_distribution<long long> dist(500000000LL, 1000000000LL);
+
+        long long val = dist(rng);
+
         for (int i = 0; i < n; i++) {
-            if (i % 2 == 0) cout << high_dist(rng) << "\n";
-            else cout << low_dist(rng) << "\n";
+            if (i % 2 == 0) cout << -val << "\n";
+            else cout << val << "\n";
         }
     } 
     else if (testNum == 5) { // Test 5: Mảng giảm dần đều
@@ -54,32 +56,31 @@ void genStrLexi(int testNum) {
     int n = 100000;
     cout << n << "\n";
 
-    if (testNum == 1) { // Test 1: Mảng hằng chuỗi kí tự lớn kịch trần
+    if (testNum == 1) { // Test 1: Mảng hằng chuỗi kí tự lớn kịch trần ('z')
         string s(100, 'z');
         for (int i = 0; i < n; i++) cout << s << "\n";
     } 
-    else if (testNum == 2) { // Test 2: Ngẫu nhiên hoàn toàn (Độ dài 100)
+    else if (testNum == 2) { // Test 2: Trùng 99 ký tự đầu, xáo trộn ký tự cuối kịch trần
+        string prefix(99, 'a');
+        uniform_int_distribution<int> char_dist(0, 25);
         for (int i = 0; i < n; i++) {
-            string s = "";
-            for (int j = 0; j < 100; j++) s += (char)('a' + uniform_int_distribution<int>(0, 25)(rng));
-            cout << s << "\n";
+            cout << prefix << (char)('a' + char_dist(rng)) << "\n";
         }
     } 
-    else if (testNum == 3) { // Test 3: Mảng hằng chuỗi kí tự nhỏ kịch trần
+    else if (testNum == 3) { // Test 3: Mảng hằng chuỗi kí tự nhỏ kịch trần ('a')
         string s(100, 'a');
         for (int i = 0; i < n; i++) cout << s << "\n";
     } 
-    else if (testNum == 4) { // Test 4: Bẫy trùng tiền tố dài (99 kí tự đầu giống nhau)
+    else if (testNum == 4) { // Test 4: Trùng 99 ký tự đầu, ký tự cuối tăng tuần hoàn (a -> z)
         string prefix(99, 'a');
         for (int i = 0; i < n; i++) {
             cout << prefix << (char)('a' + (i % 26)) << "\n";
         }
     } 
-    else if (testNum == 5) { // Test 5: Chuỗi răng cưa biến thiên ký tự tuần hoàn
+    else if (testNum == 5) { // Test 5: Ngẫu nhiên hoàn toàn (Độ dài cố định 100)
         for (int i = 0; i < n; i++) {
             string s = "";
-            char base_char = (char)('z' - (i % 26));
-            for (int j = 0; j < 100; j++) s += (char)(max('a', base_char - (j % 3)));
+            for (int j = 0; j < 100; j++) s += (char)('a' + uniform_int_distribution<int>(0, 25)(rng));
             cout << s << "\n";
         }
     }
@@ -89,40 +90,43 @@ void genStrLexi(int testNum) {
 // BÀI C: SẮP XẾP ĐỘ DÀI + TỪ ĐIỂN (STRLENLEXI)
 // ==========================================
 void genStrLenLexi(int testNum) {
-    int n = 10000; // Giữ nguyên quy mô 10,000 dòng theo đúng file thực tế của bạn
+    int n = 10000; 
     cout << n << "\n";
 
-    if (testNum == 1) { // Test 1: Ngẫu nhiên biến thiên cả độ dài (10 đến 100)
-        for (int i = 0; i < n; i++) {
-            int len = uniform_int_distribution<int>(10, 100)(rng);
-            string s = "";
-            for (int j = 0; j < len; j++) s += (char)('a' + uniform_int_distribution<int>(0, 25)(rng));
-            cout << s << "\n";
+    if (testNum == 1) { // Test 1: Chuỗi hằng nội tại theo dòng, lặp khối vài chục dòng (Độ dài 100)
+        int i = 0;
+        uniform_int_distribution<int> char_dist(0, 25);
+        while (i < n) {
+            char block_char = (char)('a' + char_dist(rng));
+            int block_size = uniform_int_distribution<int>(20, 50)(rng); // Mỗi khối dài vài chục dòng
+            string s(100, block_char);
+            for (int k = 0; k < block_size && i < n; k++, i++) {
+                cout << s << "\n";
+            }
         }
     } 
-    else if (testNum == 2) { // Test 2: Độ dài bằng nhau (100) nhưng từ điển ngẫu nhiên
+    else if (testNum == 2) { // Test 2: Ngẫu nhiên hoàn toàn (Độ dài cố định 100)
         for (int i = 0; i < n; i++) {
             string s = "";
             for (int j = 0; j < 100; j++) s += (char)('a' + uniform_int_distribution<int>(0, 25)(rng));
             cout << s << "\n";
         }
     } 
-    else if (testNum == 3) { // Test 3: Mảng hằng chuỗi kí tự nhỏ kịch trần (Độ dài 50)
+    else if (testNum == 3) { // Test 3: Mảng hằng chuỗi kí tự nhỏ (Độ dài cố định 50)
         string s(50, 'a');
         for (int i = 0; i < n; i++) cout << s << "\n";
     } 
-    else if (testNum == 4) { // Test 4: Bẫy trùng tiền tố dài (99 kí tự đầu giống nhau)
+    else if (testNum == 4) { // Test 4: Trùng 99 ký tự đầu, ký tự cuối tăng tuần hoàn (a -> z, Độ dài 100)
         string prefix(99, 'a');
         for (int i = 0; i < n; i++) {
             cout << prefix << (char)('a' + (i % 26)) << "\n";
         }
     } 
-    else if (testNum == 5) { // Test 5: Chuỗi răng cưa biến thiên ký tự tuần hoàn
+    else if (testNum == 5) { // Test 5: Trùng 99 ký tự đầu, ký tự cuối xen kẽ 'a' và 'z' (Độ dài 100)
+        string prefix(99, 'a');
         for (int i = 0; i < n; i++) {
-            string s = "";
-            char base_char = (char)('z' - (i % 26));
-            for (int j = 0; j < 100; j++) s += (char)(max('a', base_char - (j % 3)));
-            cout << s << "\n";
+            if (i % 2 == 0) cout << prefix << "a\n";
+            else cout << prefix << "z\n";
         }
     }
 }
