@@ -31,60 +31,111 @@
 
 ## 2. Chiến lược thiết kế bộ sinh test case trong `test_gen.cpp`
 
-Để tối đa hóa thời gian chạy code từ các nhóm khác trong lớp, bộ sinh test `test_gen.cpp` của nhóm được cấu hình để tự động tạo ra đúng 15 bộ test case đối kháng (chia đều cho 3 bài toán, mỗi bài 5 test). 
+Bộ sinh test `test_gen.cpp` tự động tạo ra 15 test case (mỗi bài gồm 5 test).  
 
-Mục tiêu của bộ test này là bắt bài cơ chế vận hành của CPU, RAM và Giải thuật để ép code của đối phương chạm ngưỡng thời gian chạy tồi nhất, dễ dính lỗi **TLE (Quá thời gian)** hoặc nghẽn hằng số phần cứng.
+Mục tiêu chính của bộ test không chỉ là kiểm tra tính đúng đắn của chương trình mà còn tập trung đánh vào các điểm yếu về hiệu năng của những thuật toán sắp xếp phổ biến hiện nay. Cụ thể, bộ test được thiết kế dựa trên đặc điểm hoạt động của bốn nhóm thuật toán thường có tốc độ nhanh và được sử dụng nhiều nhất trong các bài toán sắp xếp:
 
-Dưới đây là phân tích chi tiết cho bộ test:
+- **Quick Sort**
+- **Merge Sort**
+- **Heap Sort**
+- **Radix Sort**
 
----
+Đây đều là những thuật toán có độ phức tạp tốt trong điều kiện thông thường, tuy nhiên mỗi thuật toán vẫn tồn tại các trường hợp dữ liệu đặc biệt có thể làm hiệu năng giảm mạnh. Bộ test sẽ cố tình tạo ra những cấu trúc dữ liệu như:
 
-### Dạng 1: Mảng tăng dần/giảm dần 
-* **Áp dụng cho:** Test 1 của bài `int` và Test 1 của bài `strlexi`.
-* **Thuật toán mục tiêu:** QuickSort thông thường sử dụng phân hoạch Lomuto hoặc Hoare truyền thống (luôn chọn phần tử chốt pivot cố định ở biên trái hoặc biên phải).
-* **Lý do chọn mục tiêu này:** QuickSort là giải thuật phổ biến nhất được các bạn sinh viên cài đặt nhờ hằng số thời gian nhỏ và chạy rất nhanh ở điều kiện dữ liệu ngẫu nhiên.
-* **Tại sao test này làm tăng thời gian chạy:** Khi mảng đã được tăng dần đều (`int`) hoặc là một mảng hằng chứa toàn ký tự lớn nhất `'z'` (`strlexi`), việc chọn pivot ở biên sẽ luôn bốc trúng phần tử tồi nhất mảng (nhỏ nhất hoặc lớn nhất). Lúc này, mảng con thay vì được chia đôi cân đối thì lại bị lệch hẳn: một bên chứa 0 phần tử, bên còn lại giữ nguyên $N-1$ phần tử. Cây đệ quy thẳng tuột thành một đường thẳng đứng dài $N$ tầng. Số phép so sánh tăng vọt từ $O(n \log n)$ thành $O(n^2)$, ép code đối phương dính TLE ngay lập tức.
+- Mảng đã có thứ tự sẵn
+- Mảng đảo ngược hoàn toàn
+- Dữ liệu trùng lặp số lượng lớn
+- Chuỗi có tiền tố giống nhau rất dài
+- Dữ liệu phân bố lệch hoặc chia nhánh không đều
+- Các mẫu dữ liệu gây tăng số lần truy cập bộ nhớ và đệ quy
 
----
+Thông qua đó, chương trình của đối phương dễ rơi vào các tình huống:
 
-### Dạng 2: Dữ liệu ngẫu nhiên / Vô hiệu hóa bộ lọc độ dài
-* **Áp dụng cho:** Test 2 bài `int`, Test 2 bài `strlexi`, Test 1 và Test 2 bài `strlenlexi`.
-* **Thuật toán mục tiêu:** Các thuật toán phân loại thô dựa trên bộ lọc độ dài chuỗi (như Bucket Sort theo độ dài).
-* **Lý do chọn mục tiêu này:** Nhiều nhóm giải quyết Bài C (`strlenlexi`) bằng cách lọc gom nhóm các chuỗi có cùng độ dài vào từng mảng riêng biệt rồi mới dùng Radix Sort, QuickSort hoặc MergeSort để xử lý nội bộ nhằm tăng tốc.
-* **Tại sao test này làm tăng thời gian chạy:**
-  * Ở điều kiện thường (Test 2 bài `int`, Test 2 bài `strlexi`, Test 1 bài `strlenlexi`), đây là bộ test nền tảng để đánh giá xem code đối thủ quản lý vùng nhớ con trỏ ổn định hay không khi quy mô mảng lên tới $10^5$ dòng.
-  * Riêng ở Bài C, **Test 2** ép toàn bộ $10.000$ chuỗi đều có **độ dài bằng 100 ký tự tuyệt đối**. Việc này làm bẻ gãy hoàn toàn bộ lọc độ dài của đối thủ. Toàn bộ lượng dữ liệu khổng lồ bị dồn ứ cục bộ vào đúng một nhóm duy nhất, ép giải thuật của đối phương phải gánh trọn phần so sánh từ điển nặng nề ở phía sau mà không được lợi thế sắp xếp theo độ dài chuỗi.
+- Cây đệ quy bị lệch sâu
+- Số phép so sánh tăng mạnh
+- Phân hoạch mất cân bằng
+- Tăng số lần copy chuỗi và truy cập RAM
+- CPU xử lý nhánh điều kiện kém hiệu quả
+- Tốn thêm nhiều hằng số thời gian dù độ phức tạp lý thuyết không đổi
 
----
+Kết quả là thời gian chạy có thể tăng lên đáng kể, dễ dẫn tới lỗi **TLE (Time Limit Exceeded)** hoặc làm lộ rõ điểm yếu trong cách cài đặt thuật toán.
 
-### Dạng 3: Mảng hằng trùng lặp toàn bộ
-* **Áp dụng cho:** Test 3 bài `int`, Test 3 bài `strlexi`, Test 3 bài `strlenlexi`.
-* **Thuật toán mục tiêu:** QuickSort phân hoạch Lomuto cơ bản và các giải thuật sao chép nội dung chuỗi nặng (MergeSort).
-* **Lý do chọn mục tiêu này:** Merge Sort và QuickSort thông thường rất ít khi kiểm tra điều kiện mảng trùng lặp trước khi thực hiện chia đệ quy.
-* **Tại sao test này làm tăng thời gian chạy:**
-  * Với QuickSort dùng phân hoạch Lomuto, giải thuật không có cơ chế dừng lại khi gặp phần tử bằng chốt. Gặp mảng chứa toàn số `42`, vòng lặp phân hoạch vẫn chạy qua toàn bộ mảng một cách mù quáng nhưng cây đệ quy vẫn bị lệch $N$ tầng, đẩy tốc độ lên $O(n^2)$.
-  * Với các bài chuỗi (`strlexi`, `strlenlexi`), việc các chuỗi giống hệt nhau bắt buộc các hàm so sánh cặp của đối thủ phải lướt qua đủ 100 ký tự mới đưa ra được kết quả. Việc so sánh lặp đi lặp lại nội dung chuỗi thô nặng nề trực tiếp trên RAM làm nghẽn băng thông xử lý của hệ thống.
+Dưới đây là phân tích chi tiết cơ chế hoạt động và mục tiêu của từng test case trong bộ dữ liệu:
 
 ---
 
-### Dạng 4: Bẫy trùng tiền tố dài 
-* **Áp dụng cho:** Test 4 bài `int`, Test 4 bài `strlexi`, Test 4 bài `strlenlexi`.
-* **Thuật toán mục tiêu:** MSD Radix Sort (Sắp xếp từ trái qua phải) và các hàm `Insertion Sort` dọn dẹp mảng con nhỏ.
-* **Lý do chọn mục tiêu này:** Radix Sort là vua tốc độ tuyến tính được nhiều nhóm chọn để xử lý bài toán chuỗi nhằm đạt tốc độ tuyệt đối.
-* **Tại sao test này làm tăng thời gian chạy:**
-  * **Đối với bài `int` (Test 4):** Việc sinh số đan xen khối lớn và khối nhỏ luân phiên liên tục làm phá sản hoàn toàn các giải thuật dò đoán nhánh của CPU, ép máy tính phải thực hiện tối đa số phép so sánh ở mọi tầng phân chia.
-  * **Đối với bài chuỗi (Test 4 ở bài B và C):** Nhóm sinh ra hàng vạn chuỗi dài tối đa 100 ký tự, nhưng có **99 ký tự đầu giống hệt nhau**, chỉ khác đúng ký tự thứ 100 ở cuối. Khi quét từ trái qua phải, MSD Radix Sort thấy ký tự giống nhau nên liên tục bẻ nhánh đệ quy sâu vô tận xuống các tầng dưới. Việc ép CPU sinh hàng vạn khung bộ nhớ (Stack Frame) trống không những làm chậm tốc độ chạy thực tế mà còn rất dễ kích hoạt lỗi **Stack Overflow**.
+### BÀI A: SẮP XẾP SỐ NGUYÊN (`int`)
+*Quy mô cố định: N = 100,000 dòng.*
+
+* **Test 1 (Mảng tăng dần đều):**
+  * **Thuật toán mục tiêu:** QuickSort thông thường (chọn pivot ở đầu hoặc cuối mảng).
+  * **Cơ chế tăng thời gian:** Khi mảng đã được sắp tăng sẵn, pivot luôn rơi vào phần tử nhỏ nhất hoặc lớn nhất. Điều này làm mảng bị chia cực lệch: một bên gần như rỗng, bên còn lại chứa hầu hết phần tử. Cây đệ quy bị kéo dài thành gần N tầng, khiến số phép so sánh tăng từ `O(n log n)` lên gần `O(n²)`.
+
+* **Test 2 (Mảng ngẫu nhiên hoàn toàn):**
+  * **Thuật toán mục tiêu:** Bộ test chuẩn để đo hiệu năng trung bình trong điều kiện bình thường.
+
+* **Test 3 (Mảng hằng trùng lặp tuyệt đối):**
+  * **Thuật toán mục tiêu:** QuickSort dùng phân hoạch Lomuto cơ bản.
+  * **Cơ chế tăng thời gian:** Khi toàn bộ phần tử đều bằng nhau (`42`), thuật toán vẫn phải quét và chia mảng liên tục dù dữ liệu không thay đổi gì. Các nhánh đệ quy vẫn bị kéo dài gần N tầng, làm chi phí tăng mạnh lên gần `O(n²)`.
+
+* **Test 4 (Mảng răng cưa đổi dấu đan xen):**
+  * **Thuật toán mục tiêu:** Cơ chế dự đoán rẽ nhánh của CPU.
+  * **Cơ chế tăng thời gian:** Dữ liệu được tạo theo dạng:
+    `-a, a, -a, a, -a, a...`
+    
+    Dấu âm dương thay đổi liên tục khiến CPU khó đoán kết quả của các phép so sánh điều kiện. Điều này làm chương trình phải xử lý nhiều nhánh hơn bình thường, khiến tốc độ thực tế giảm đi.
+
+* **Test 5 (Mảng giảm dần đều):**
+  * **Thuật toán mục tiêu:** Heap Sort.
+  * **Cơ chế tăng thời gian:** Khi dữ liệu đảo ngược hoàn toàn, quá trình `Heapify` thường phải đổi chỗ phần tử từ gốc xuống tận cuối cây. Việc truy cập dữ liệu liên tục ở các vị trí xa nhau trong mảng làm bộ nhớ đệm hoạt động kém hiệu quả và khiến thời gian xử lý tăng lên.
 
 ---
 
-### Dạng 5: Phá vỡ bộ nhớ đệm (Cache Miss)
-* **Áp dụng cho:** Test 5 bài `int`, Test 5 bài `strlexi`, Test 5 bài `strlenlexi`.
-* **Thuật toán mục tiêu muốn "triệt hạ":** Heap Sort và cơ chế quản lý bộ nhớ đệm phần cứng (Cache Locality).
-* **Lý do chọn giải thuật này:** Các thuật toán giữ độ phức tạp ổn định như Heap Sort thường dựa vào cấu trúc mảng phẳng để quản lý cây nhị phân.
-* **Tại sao bộ test này làm tăng thời gian chạy:**
-  * **Đối với bài `int` (Test 5):** Mảng giảm dần đều từ `100000` về `1` ép hàm `Heapify` mỗi lần trích xuất phần tử lớn nhất đều phải hoán đổi và chạy xuyên hết chiều sâu của cây nhị phân (từ gốc xuống ngọn). Do cây Heap lưu trên mảng phẳng, việc ép CPU liên tục nhảy cách quãng các ô nhớ nằm rất xa nhau ($2i+1$ và $2i+2$) làm phá sản cơ chế lưu bộ nhớ đệm. CPU dính lỗi **Cache Miss kịch trần**, phải mất thời gian lội ngược ra RAM để tìm dữ liệu, khiến tốc độ xử lý bị kéo tụt thảm hại.
-  * **Đối với bài chuỗi (Test 5 ở bài B và C):** Việc biến thiên ký tự tuần hoàn tạo ra một cấu trúc mảng răng cưa chuỗi cực kỳ phức tạp. Phép toán này ép các hàm so sánh cặp trực tiếp chuỗi phải duyệt sâu vào nội dung để phân loại, đồng thời làm phân tán các con trỏ vùng nhớ động của `std::string` trên RAM, triệt hạ hoàn toàn tốc độ xử lý của đối thủ.
+### BÀI B: SẮP XẾP TỪ ĐIỂN CHUỖI (`strlexi`)
+*Quy mô cố định: N = 100,000 dòng, độ dài mỗi chuỗi cố định = 100 ký tự.*
+
+* **Test 1 (Mảng hằng chuỗi ký tự lớn):**
+  * **Thuật toán mục tiêu:** Radix Sort hoặc các thuật toán so sánh chuỗi trực tiếp.
+  * **Cơ chế tăng thời gian:** Tất cả chuỗi đều gồm 100 ký tự `'z'`. Khi so sánh hai chuỗi, chương trình phải kiểm tra gần như toàn bộ 100 ký tự mới biết chúng bằng nhau, gây tốn thời gian xử lý và truy cập bộ nhớ.
+
+* **Test 2 (Bẫy trùng 99 ký tự đầu ngẫu nhiên):**
+  * **Thuật toán mục tiêu:** MSD Radix Sort.
+  * **Cơ chế tăng thời gian:** Các chuỗi giống nhau ở 99 ký tự đầu và chỉ khác ký tự cuối cùng. Vì vậy thuật toán phải đi sâu gần hết chiều dài chuỗi mới phân loại được dữ liệu, làm tăng số lần đệ quy và thao tác trên bộ nhớ.
+
+* **Test 3 (Mảng hằng chuỗi ký tự nhỏ):**
+  * **Thuật toán mục tiêu:** QuickSort chuỗi thông thường.
+  * **Cơ chế tăng thời gian:** Toàn bộ chuỗi đều là `'a'`. Các phép so sánh chuỗi phải lặp đi lặp lại qua nhiều ký tự dù kết quả cuối cùng vẫn giống nhau, làm chi phí xử lý tăng mạnh.
+
+* **Test 4 (Bẫy trùng tiền tố dài tăng tuần hoàn):**
+  * **Thuật toán mục tiêu:** MSD Radix Sort và các bước `Insertion Sort` xử lý mảng nhỏ.
+  * **Cơ chế tăng thời gian:** Chuỗi trùng nhau ở 99 ký tự đầu, ký tự cuối thay đổi tuần hoàn từ `'a'` đến `'z'`. Điều này khiến thuật toán phải đệ quy rất sâu mới tách được dữ liệu, đồng thời tạo nhiều lời gọi hàm và vùng nhớ tạm không cần thiết.
+
+* **Test 5 (Mảng chuỗi ngẫu nhiên hoàn toàn):**
+  * **Thuật toán mục tiêu:** Bộ test chuẩn để đánh giá khả năng quản lý bộ nhớ và đối tượng `std::string` ở quy mô lớn.
+
 ---
+
+### BÀI C: SẮP XẾP ĐỘ DÀI + TỪ ĐIỂN (`strlenlexi`)
+*Quy mô cố định: N = 10,000 dòng. Tất cả test dài 100 ký tự, trừ Test 3 dài 50 ký tự.*
+
+* **Test 1 (Mảng hằng theo khối lặp):**
+  * **Thuật toán mục tiêu:** Bucket Sort theo độ dài và MSD Radix Sort.
+  * **Cơ chế tăng thời gian:** Tất cả chuỗi đều dài 100 nên việc phân loại theo độ dài không còn tác dụng. Ngoài ra, nhiều dòng giống hệt nhau được lặp thành từng khối lớn, khiến thuật toán phải xử lý lặp lại rất nhiều dữ liệu tương tự nhau.
+
+* **Test 2 (Mảng chuỗi ngẫu nhiên hoàn toàn):**
+  * **Thuật toán mục tiêu:** Bộ test chuẩn để đo chi phí của phép so sánh kép: so độ dài trước rồi mới so từ điển.
+
+* **Test 3 (Mảng hằng chuỗi ký tự nhỏ ngắn):**
+  * **Thuật toán mục tiêu:** Các thuật toán so sánh chuỗi phức tạp.
+  * **Cơ chế tăng thời gian:** Mọi chuỗi đều giống nhau và có độ dài 50. Thuật toán vẫn phải kiểm tra cả độ dài lẫn nội dung chuỗi nhiều lần dù dữ liệu không có khác biệt.
+
+* **Test 4 (Bẫy trùng tiền tố dài tuần hoàn):**
+  * **Thuật toán mục tiêu:** LSD Radix Sort (quét từ phải sang trái).
+  * **Cơ chế tăng thời gian:** Vì chuỗi dài 100 ký tự và giống nhau gần như toàn bộ, thuật toán phải quét đủ cả 100 lượt. Mỗi lượt lại cần sao chép dữ liệu giữa các mảng tạm, làm tăng mạnh số thao tác trên RAM và khiến chương trình chậm đi đáng kể.
+
+* **Test 5 (Bẫy tiền tố xen kẽ nhị phân):**
+  * **Thuật toán mục tiêu:** QuickSort 3 nhánh và các thuật toán phân hoạch chuỗi.
+  * **Cơ chế tăng thời gian:** Chuỗi trùng 99 ký tự đầu, ký tự cuối chỉ xen kẽ giữa `'a'` và `'z'`. Điều này làm dữ liệu bị chia không đều, khiến thuật toán phải thực hiện nhiều phép so sánh sâu mới tách được các nhóm phần tử.
 ## 3. Phân tích giải thuật tối ưu lần chạy 2. Cách tối ưu so với lần 1 
 
 # Bài A : Int
