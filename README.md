@@ -2,34 +2,13 @@
 
 * **Môn học:** Cấu trúc dữ liệu và Giải thuật
 * **Lớp:** 25CTT6 
-* **Giảng viên:**  Huỳnh Lâm Hải Đăng
-* **Giảng viên:**  Nguyễn Ngọc Đức
-* **Giảng viên:**  Phạm Trọng Nghĩa
+* **Giảng viên:**  Huỳnh Lâm Hải Đăng - Nguyễn Ngọc Đức - Phạm Trọng Nghĩa
 * **Sinh viên thực hiện:** Trần Tấn Phước - Trần Nhất Phong - Châu Thị Thảo Vân
-* **MSSV:** [25120423-25120414-25120467]
+* **MSSV:** 25120423-25120414-25120467
 
 ---
 
-## 1. Phân tích thực nghiệm và Quá trình tối ưu qua 2 vòng Contest
-
-
-### Lần chạy thứ 1:
-* **Bài A (Sắp xếp số nguyên - `int`):** Cài đặt bằng **QuickSort thông thường** đạt tốc độ tối ưu **46 ms** do dữ liệu vòng đầu phân bố đều, không xuất hiện các trường hợp biến dạng phân hoạch.
-* **Bài B (Sắp xếp từ điển - `strlexi`):** Cài đặt bằng **Radix Sort** kết hợp với **Insertion Sort** đạt thời gian chạy hệ thống là **125 ms**.
-* **Bài C (Sắp xếp độ dài + từ điển - `strlenlexi`):** Cài đặt bằng **Radix Sort** đạt thời gian chạy hệ thống là **93 ms**.
-
-### Lần chạy thứ 2:
-
-#### Thống kê kết quả cài đặt tối ưu nhất ở lần 2:
-| Bài toán | Thuật toán tối ưu nhất lần 2 | Thời gian chạy | Phương thức tối ưu hóa cốt lõi |
-| :--- | :--- | :--- | :--- |
-| **Bài A (`int`)** | **Heap Sort gián tiếp** | **78 ms** | Chuyển sang Heap Sort để cố định độ phức tạp ở mức $O(n \log n)$ trong mọi kịch bản dữ liệu, kết hợp loại bỏ chi phí dịch chuyển vùng nhớ bằng mảng chỉ số tĩnh. |
-| **Bài B (`strlexi`)** | **Radix Sort cải tiến** | **78 ms** | Phân loại ký tự theo tầng thay vì so sánh cặp, triệt tiêu hằng số so sánh chuỗi cực lớn khi gặp các chuỗi có độ dài kịch trần 100 ký tự. |
-| **Bài C (`strlenlexi`)** | **Indirect QuickSort 3-Way + Insertion Sort** | **187 ms** | Áp dụng phân hoạch 3 nhánh Dijkstra để cô lập chuỗi trùng lặp trong $O(n)$, ngắt đệ quy sớm bằng Insertion Sort ở đoạn mảng nhỏ ($< 16$ phần tử) và sắp xếp gián tiếp qua mảng chỉ số số nguyên. |
-
----
-
-## 2. Chiến lược thiết kế bộ sinh test case trong `test_gen.cpp`
+## 1. Chiến lược thiết kế bộ sinh test case trong `test_gen.cpp`
 
 Bộ sinh test `test_gen.cpp` tự động tạo ra 15 test case (mỗi bài gồm 5 test).  
 
@@ -136,54 +115,118 @@ Dưới đây là phân tích chi tiết cơ chế hoạt động và mục tiê
 * **Test 5 (Bẫy tiền tố xen kẽ nhị phân):**
   * **Thuật toán mục tiêu:** QuickSort 3 nhánh và các thuật toán phân hoạch chuỗi.
   * **Cơ chế tăng thời gian:** Chuỗi trùng 99 ký tự đầu, ký tự cuối chỉ xen kẽ giữa `'a'` và `'z'`. Điều này làm dữ liệu bị chia không đều, khiến thuật toán phải thực hiện nhiều phép so sánh sâu mới tách được các nhóm phần tử.
-## 3. Phân tích giải thuật tối ưu lần chạy 2. Cách tối ưu so với lần 1 
+## 2. Quá trình tối ưu và kết quả qua 2 lần chạy
 
-# Bài A : Int
-Ở lần chạy đầu tiên, nhóm sử dụng **QuickSort thông thường** đạt hiệu năng tốt ở điều kiện thường. Tuy nhiên, khi đối mặt với các bộ test hack chứa mảng hằng hoặc dữ liệu răng cưa (Zig-zag) ở Vòng 2, QuickSort bị mất cân bằng phân hoạch nghiêm trọng đẩy độ phức tạp lên $O(n^2)$ và dính lỗi TLE. Nhóm đã chuyển dịch sang **Heap Sort đệ quy** để cố định thời gian chạy luôn ở mức $O(n \log n)$ trong mọi kịch bản dữ liệu và đạt mốc thời gian **78 ms**.
-#### 1. Tình huống thực tế và lý do đổi thuật toán
-* **Ở Lần chạy 1:** Bản đầu tiên dùng **QuickSort** chạy rất nhanh vì dữ liệu phân bố đều.
-* **Ở Lần chạy 2:** Khi bị các nhóm khác (có nhóm em) nộp test hack (như mảng gồm các số giống hệt nhau hoặc mảng xếp răng cưa), QuickSort bị mất cân bằng khi chia đôi mảng. Tốc độ của nó bị tụt thảm hại và dính lỗi quá thời gian (TLE).
-* **Giải pháp ở Lần 2:** Chuyển sang dùng **Heap Sort đệ quy**. Thuật toán này có ưu điểm là giữ nguyên tốc độ ổn định trong mọi trường hợp (bất kể dữ liệu có bị trùng lặp hay răng cưa) và đạt mốc thời gian **78 ms**.
+### Lần chạy thứ 1
 
-#### 2. Các bước cải tiến từ bản Heap Sort gốc để chạy nhanh hơn nữa
+Ở vòng đầu tiên, nhóm ưu tiên lựa chọn các thuật toán có tốc độ trung bình cao nhằm đạt thời gian thực thi tốt nhất trên bộ dữ liệu thông thường.
 
-Từ code Heap Sort cơ bản, nhóm đã thực hiện 2 cải tiến nhỏ để tối ưu hóa bộ nhớ và tăng tốc cho CPU:
+| Bài toán | Thuật toán sử dụng | Thời gian |
+|----------|-------------------|------------|
+| A (`int`) | QuickSort | 46 ms |
+| B (`strlexi`) | MSD Radix Sort + Insertion Sort | 125 ms |
+| C (`strlenlexi`) | LSD Radix Sort | 93 ms |
 
-* **Sắp xếp gián tiếp qua mảng chỉ số (Indirect Sorting):**
-  * *Nhược điểm bản cũ:* Mỗi lần đổi chỗ các phần tử trên cây Heap, code phải gọi hàm `swap` để bê nguyên giá trị số nguyên ở ô nhớ này đặt sang ô nhớ khác trên RAM. Việc này làm tốn thời gian ghi dữ liệu của máy tính.
-  * *Cải tiến mới:* Tạo một mảng số nguyên phụ tên là `p` để lưu vị trí (0, 1, 2, 3...). Mảng dữ liệu số gốc `arr` được giữ đứng yên 100% trên RAM. Khi cần so sánh hay đổi chỗ, code chỉ việc hoán đổi các con số chỉ vị trí trên mảng `p`. Máy tính di chuyển các con số chỉ số này nhanh hơn nhiều so với việc di chuyển dữ liệu thô, giúp tiết kiệm thời gian.
-* **Tạo bộ nhớ tĩnh ngay từ đầu (Global Static Allocation):**
-  * *Nhược điểm bản cũ:* Dữ liệu truyền vào được lưu bằng `vector<int> a(n)`. Bản chất của `vector` là bộ nhớ động, tức là khi bật chương trình lên, máy tính mới bắt đầu đi tìm và cấp phát các ô nhớ trống trên RAM. Việc này tạo ra một khoảng trễ (Overhead) không đáng có.
-  * *Cải tiến mới:* Thay `vector` bằng mảng tĩnh thuần C (`int arr[100005]`) khai báo nằm ngoài các hàm. Bộ nhớ này sẽ được máy tính chuẩn bị sẵn sàng ngay từ khi dịch code xong. Khi chạy, CPU chỉ việc lao vào đọc dữ liệu một đường thẳng băng, giúp code chạy mượt mà và an toàn trước mọi bộ test khó.# Bài B : Strlexi
- 
-# Bài B : Strlexi
-Bản cài đặt Bài B ở lần 2 đã chứng minh sự vượt trội về mặt giải thuật khi ép xung thời gian chạy từ **125 ms** ở lần 1 xuống **78 ms** ở lần 2. Quá trình cải tiến và tối ưu hóa cấu trúc mã nguồn từ phiên bản đầu lên phiên bản thứ hai được triển khai dựa trên ba chiến thuật cốt lõi sau:
+#### Bài A (`int`)
 
-1. **Chuyển dịch từ Sắp xếp trực tiếp sang Sắp xếp gián tiếp (Indirect Sorting):**
-   * *Hạn chế ở lần 1:* Bản cài đặt đầu tiên truyền vào hàm một `vector<string>& a`. Tại bước rẽ nhánh phân loại dữ liệu, giải thuật thực hiện dịch chuyển trực tiếp nội dung các chuỗi thô thông qua cơ chế `move(a[i])` sang mảng tạm rồi gán ngược lại. Mặc dù đã tối ưu bằng toán tử dịch chuyển con trỏ, CPU vẫn phải liên tục quản lý, cấp phát lại các cấu trúc vùng nhớ động (Dynamic memory block) nặng nề của đối tượng `std::string` trên RAM khi quy mô mảng lên tới $10^5$ dòng.
-   * *Cải tiến ở lần 2:* Giải thuật giữ mảng chuỗi gốc `a` đứng yên 100% trên bộ nhớ trong suốt quá trình chạy. Nhóm thiết lập một mảng số nguyên phụ `int p[100005]` để lưu trữ chỉ số vị trí (index) ban đầu của chuỗi. Mọi thao tác hoán đổi, phân loại và trích xuất ký tự đều tác động gián tiếp thông qua mảng `p`. Do chi phí di chuyển dữ liệu kiểu số nguyên (`int`) trên thanh ghi CPU thấp hơn hàng trăm lần so với đối tượng chuỗi, điểm nghẽn về hằng số thời gian dịch chuyển bộ nhớ đã được giải phóng hoàn toàn.
+Nhóm sử dụng QuickSort do đây là thuật toán có hiệu năng trung bình rất tốt và chi phí bộ nhớ thấp. Trên các bộ dữ liệu ngẫu nhiên hoặc phân bố tương đối đều, QuickSort đạt tốc độ cao nhất trong số các thuật toán đã thử nghiệm.
 
-2. **Khử chi phí cấp phát bộ nhớ động của Stack (Global Static Allocation):**
-   * *Hạn chế ở lần 1:* Bản cũ thực hiện khởi tạo động các mảng đếm tần suất `vector<int> cnt` và mảng vị trí `vector<int> pos` ngay bên trong hàm đệ quy `msd`. Do đặc thù của MSD Radix Sort là phân rã và gọi đệ quy sâu thành hàng ngàn nhánh nhỏ, việc CPU phải liên tục cấp phát (allocate) và giải phóng (deallocate) các vector này trên Stack Frame ở mỗi tầng gọi hàm đã tạo ra một chi phí hao tổn hệ thống (Overhead) cực kỳ lớn.
-   * *Cải tiến ở lần 2:* Đưa hai mảng phụ trợ kích thước lớn (`p` và `aux`) ra ngoài phạm vi toàn cục dưới dạng bộ nhớ tĩnh (`global static array`). Bên trong hàm đệ quy lúc này chỉ khai báo duy nhất một mảng đếm tần suất cấu trúc thuần C kích thước siêu nhỏ cố định: `int count[28] = {0};`. Cấu trúc này triệt tiêu hoàn toàn gánh nặng tạo/hủy mảng của Stack Frame, CPU chỉ việc tái sử dụng vùng nhớ tĩnh có sẵn để quét tuyến tính, tối ưu hóa tối đa tốc độ vòng lặp.
+Kết quả thực tế cho thấy thời gian chỉ khoảng **46 ms**, là bài có tốc độ tốt nhất trong lần chạy đầu.
 
-3. **Loại bỏ hoàn toàn Insertion Sort tại các nhánh mảng nhỏ (Bẻ gãy bẫy chuỗi trùng tiền tố):**
-   * *Hạn chế ở lần 1:* Bản cũ tích hợp một ngưỡng `CUTOFF = 32` để chuyển sang `insertion_sort` khi đoạn con nhỏ đi nhằm tiết kiệm chi phí đệ quy. Tuy nhiên, hàm `insertion_sort` này lại thực hiện so sánh cặp trực tiếp giữa các chuỗi (`a[j] > key`). Khi đối phương nộp bộ test "hack" chứa các chuỗi có tiền tố giống nhau hoàn toàn (ví dụ giống nhau 99 ký tự đầu), hàm này buộc CPU phải duyệt lặp đi lặp lại sâu từ đầu đến cuối nội dung chuỗi, làm phá sản hoàn toàn lợi thế tuyến tính của Radix Sort.
-   * *Cải tiến ở lần 2:* Nhóm quyết định xóa bỏ hoàn toàn tầng gộp `CUTOFF`, cho phép MSD đệ quy tự nhiên đến tận cùng (`l >= r`). Vì bản chất MSD phân loại độc lập theo từng vị trí ký tự `d` tại thời điểm xét, khi gặp bẫy tiền tố dài, nó chỉ lướt qua ký tự tại vị trí `d` đó đúng một lần trong vòng lặp $O(n)$ của tầng đệ quy tương ứng chứ không thực hiện so sánh cặp lại từ đầu chuỗi. Cải tiến này giúp giải thuật đạt trạng thái "miễn nhiễm" trước các bộ test bẫy chuỗi trùng tiền tố dài.
-## Bài C : Strlenlexi
+#### Bài B (`strlexi`)
 
-Bài C là bài toán có độ phức tạp cao nhất khi tiêu chí sắp xếp phải phối hợp cả độ dài chuỗi lẫn thứ tự từ điển, đồng thời phải chịu áp lực lớn từ các bộ test case phối hợp cực đoan ở vòng đối kháng. Việc thay đổi từ thuật toán LSD Radix Sort phân nhóm ở lần 1 sang QuickSort 3 nhánh gián tiếp ở lần 2 mang lại sự nâng cấp vượt bậc về hiệu năng, khắc phục hoàn toàn lỗi chạy quá thời gian (TLE) và vượt qua toàn bộ hệ thống test với thời gian tối ưu **187 ms**.
+Đối với bài toán sắp xếp chuỗi từ điển, nhóm sử dụng MSD Radix Sort kết hợp Insertion Sort cho các đoạn dữ liệu nhỏ.
 
-Quá trình thay đổi tư duy và tối ưu hóa cấu trúc mã nguồn được phân tích qua ba điểm cốt lõi sau:
+Giải pháp này tận dụng việc phân loại trực tiếp theo ký tự thay vì so sánh toàn bộ chuỗi, giúp giảm đáng kể số phép so sánh trên dữ liệu ngẫu nhiên. Tuy nhiên khi gặp các chuỗi có tiền tố dài giống nhau, Insertion Sort bắt đầu trở thành điểm nghẽn do phải thực hiện nhiều phép so sánh chuỗi sâu.
 
-1. **Khắc phục triệt để lỗi quá tải thời gian (TLE) ở Test 50:**
-   * *Hạn chế ở lần 1:* Bản cài đặt đầu tiên sử dụng **LSD Radix Sort** chạy vòng lặp quét ký tự từ phải qua trái theo chiều dài chuỗi `maxLen`. Khi gặp bộ test đối kháng chứa lượng chuỗi lớn có độ dài kịch trần 100 ký tự (như Test 50), vòng lặp bắt buộc phải chạy đủ 100 lần. Tại mỗi vòng, code lại ép CPU phải sao chép dữ liệu chuỗi thô qua lại giữa mảng gốc và mảng tạm `tmp`. Việc phải thực hiện hàng triệu lượt copy chuỗi nặng nề trên RAM đã đốt cháy tài nguyên thời gian của hệ thống, dẫn đến lỗi TLE.
-   * *Cải tiến ở lần 2:* Nhóm chuyển sang giải thuật **QuickSort 3 nhánh kết hợp so sánh trực tiếp**. Hàm so sánh `compareString` mới sẽ quét từ trái qua phải và ngắt lệnh (return) ngay lập tức khi tìm thấy ký tự khác biệt đầu tiên. Nhờ vậy, code không bị ép phải chạy qua đủ 100 ký tự một cách mù quáng, giảm thiểu tối đa số phép tính toán của CPU.
+#### Bài C (`strlenlexi`)
 
-2. **Triệt tiêu gánh nặng sao chép chuỗi nhờ Sắp xếp gián tiếp (Indirect Sorting):**
-   * *Hạn chế ở lần 1:* Ở bản cũ, việc gán đổi dữ liệu chuỗi thô diễn ra liên tục ở mọi tầng quét ký tự, làm phình to hằng số thời gian thực thi trên RAM.
-   * *Cải tiến ở lần 2:* Toàn bộ mảng chuỗi gốc được giữ cố định trên bộ nhớ trong suốt quá trình chạy. Nhóm sử dụng mảng chỉ số tĩnh toàn cục `int p[100005]`, mọi phép so sánh và hoán đổi vị trí (`swap`) chỉ thực hiện trên mảng số nguyên `p` này. Việc thay thế thao tác dịch chuyển chuỗi bằng dịch chuyển số nguyên thuần túy trên thanh ghi giúp giải phóng hoàn toàn gánh nặng cho bộ nhớ RAM, giúp code chạy cực kỳ nhẹ nhàng.
+Nhóm lựa chọn LSD Radix Sort vì dữ liệu chủ yếu là chuỗi có độ dài giới hạn. Thuật toán hoạt động ổn định và cho thời gian thực thi khá tốt ở vòng đầu với kết quả **93 ms**.
 
-3. **Hóa giải bẫy dữ liệu trùng lặp nhờ Phân hoạch 3 nhánh Dijkstra:**
-   * *Hạn chế ở lần 1:* Thuật toán LSD Radix Sort phân nhóm ở lần 1 không có khả năng tự tối ưu hoặc ngắt sớm khi gặp các cụm dữ liệu có cấu trúc trùng lặp lớn, dẫn đến việc lãng phí thời gian quét qua các ô nhớ trống.
-   * *Cải tiến ở lần 2:* Nhóm áp dụng giải thuật **QuickSort 3 nhánh của Dijkstra** phối hợp cùng bộ sinh số ngẫu nhiên để chọn phần tử chốt (pivot), chia mảng thành 3 vùng độc lập (`< pivot`, `== pivot`, `> pivot`). Khi đối mặt với dữ liệu chứa lượng chuỗi giống nhau lớn, giải thuật gom sạch và cô lập vùng bằng nhau này chỉ trong đúng một lần duyệt tuyến tính $O(n)$ rồi ngắt hoàn toàn đệ quy vào đó. Đồng thời, hệ thống tự động chuyển sang dùng `insertionSort` trên mảng chỉ số khi đoạn con nhỏ hơn 16 phần tử, tận dụng tối đa cơ chế bộ nhớ đệm (Cache Locality) của phần cứng để đạt tốc độ tối đa.
+Tuy nhiên cách tiếp cận này yêu cầu quét qua toàn bộ chiều dài chuỗi ở mỗi lần xử lý, khiến chi phí tăng mạnh khi gặp các bộ test có tiền tố dài hoặc số lượng chuỗi lớn.
+
+---
+
+### Đánh giá sau vòng 1
+
+Kết quả vòng đầu cho thấy các thuật toán được lựa chọn đều có hiệu năng cao trong điều kiện bình thường. Tuy nhiên phần lớn các thuật toán vẫn tồn tại những trường hợp dữ liệu đặc biệt có thể làm giảm hiệu năng đáng kể.
+
+Sau khi công bố bộ test đối kháng giữa các nhóm, nhóm nhận thấy nhiều test được thiết kế nhằm khai thác trực tiếp các điểm yếu của QuickSort và Radix Sort, đặc biệt là:
+
+- Dữ liệu đã có thứ tự sẵn.
+- Dữ liệu trùng lặp số lượng lớn.
+- Chuỗi có tiền tố dài giống nhau.
+- Các trường hợp gây mất cân bằng phân hoạch hoặc tăng chi phí đệ quy.
+
+Điều này buộc nhóm phải thay đổi chiến lược tối ưu ở vòng thứ hai.
+
+---
+
+### Lần chạy thứ 2
+
+Sau khi phân tích các bộ test đối kháng, nhóm tập trung vào mục tiêu quan trọng nhất: đảm bảo hiệu năng ổn định trong trường hợp xấu thay vì chỉ tối ưu cho dữ liệu trung bình.
+
+| Bài toán | Thuật toán tối ưu | Thời gian |
+|----------|------------------|------------|
+| A (`int`) | Heap Sort gián tiếp | 78 ms |
+| B (`strlexi`) | MSD Radix Sort gián tiếp | 78 ms |
+| C (`strlenlexi`) | Indirect QuickSort 3-Way + Insertion Sort | 187 ms |
+
+#### Bài A (`int`)
+
+QuickSort được thay thế bằng Heap Sort.
+
+Mặc dù thời gian trung bình không còn nhanh bằng QuickSort trên dữ liệu đẹp, Heap Sort có ưu điểm lớn là luôn duy trì độ phức tạp `O(n log n)` bất kể dữ liệu đầu vào.
+
+Nhóm đồng thời áp dụng:
+
+- Sắp xếp gián tiếp thông qua mảng chỉ số.
+- Mảng tĩnh toàn cục thay cho cấu trúc cấp phát động.
+
+Nhờ đó chương trình không còn bị ảnh hưởng bởi các bộ test gây mất cân bằng phân hoạch.
+
+#### Bài B (`strlexi`)
+
+Thuật toán MSD Radix Sort tiếp tục được giữ lại do vẫn phù hợp với bài toán chuỗi.
+
+Tuy nhiên nhóm thay đổi cách tổ chức dữ liệu:
+
+- Giữ nguyên toàn bộ chuỗi trên RAM.
+- Chỉ thao tác trên mảng chỉ số.
+- Đưa các cấu trúc phụ trợ sang bộ nhớ tĩnh.
+- Loại bỏ Insertion Sort ở các nhánh nhỏ.
+
+Những thay đổi này giúp giảm mạnh chi phí dịch chuyển chuỗi và tránh được các bộ test có tiền tố dài giống nhau.
+
+Kết quả thời gian giảm từ **125 ms xuống còn 78 ms**.
+
+#### Bài C (`strlenlexi`)
+
+Đây là bài chịu ảnh hưởng nhiều nhất từ bộ test đối kháng.
+
+LSD Radix Sort ở vòng đầu phải quét toàn bộ chiều dài chuỗi trong mọi trường hợp, dẫn đến lượng thao tác rất lớn khi dữ liệu có chiều dài tối đa.
+
+Nhóm chuyển sang QuickSort 3 nhánh kết hợp sắp xếp gián tiếp.
+
+Ưu điểm của hướng tiếp cận mới:
+
+- Ngắt so sánh ngay khi phát hiện ký tự khác nhau đầu tiên.
+- Gom các phần tử bằng nhau chỉ trong một lần phân hoạch.
+- Giảm đáng kể số lần sao chép chuỗi.
+- Kết hợp Insertion Sort trên các đoạn nhỏ để giảm chi phí đệ quy.
+
+Nhờ đó chương trình vượt qua toàn bộ bộ test đối kháng mà không gặp lỗi TLE.
+
+---
+
+### Kết luận
+
+Qua hai vòng contest, nhóm nhận thấy rằng một thuật toán có tốc độ rất cao trên dữ liệu thông thường chưa chắc là lựa chọn tối ưu khi xuất hiện các bộ test đối kháng.
+
+Các cải tiến ở vòng 2 tập trung vào ba hướng chính:
+
+- Đảm bảo độ phức tạp ổn định trong trường hợp xấu.
+- Giảm tối đa số lần dịch chuyển dữ liệu trên RAM.
+- Hạn chế chi phí đệ quy và so sánh chuỗi sâu.
+
+Nhờ các thay đổi này, toàn bộ chương trình có thể vượt qua các bộ test đối kháng với độ ổn định và độ tin cậy cao hơn đáng kể so với phiên bản ban đầu.
