@@ -58,12 +58,9 @@ Dưới đây là phân tích chi tiết cơ chế hoạt động và mục tiê
   * **Cơ chế tăng thời gian:** Khi toàn bộ phần tử đều bằng nhau (`42`), thuật toán vẫn phải quét và chia mảng liên tục dù dữ liệu không thay đổi gì. Các nhánh đệ quy vẫn bị kéo dài gần N tầng, làm chi phí tăng mạnh lên gần `O(n²)`.
 
 * **Test 4 (Mảng răng cưa đổi dấu đan xen):**
-  * **Thuật toán mục tiêu:** Cơ chế dự đoán rẽ nhánh của CPU.
-  * **Cơ chế tăng thời gian:** Dữ liệu được tạo theo dạng:
-    `-a, a, -a, a, -a, a...`
+  * **Thuật toán mục tiêu:** QuickSort dùng phân hoạch Hoare (Mục tiêu: Ép hoán đổi tối đa)
+  * **Cơ chế tăng thời gian:** Hoare sử dụng hai con trỏ chạy từ hai đầu mảng ngược chiều nhau: con trỏ trái tìm phần tử lớn hơn pivot, con trỏ phải tìm phần tử nhỏ hơn pivot để hoán đổi (swap). Hậu quả: Vì mảng cứ một số âm (rất nhỏ) lại đan xen một số dương (rất lớn), bất kể thuật toán chọn pivot là số nào, hai con trỏ của Hoare cứ nhích một bước là lại đụng phải phần tử sai vị trí. Nó sẽ ép hàm swap() phải hoạt động với tần suất dày đặc nhất có thể ở ngay tầng phân hoạch đầu tiên, gây gánh nặng cực lớn cho bộ nhớ Cache.
     
-    Dấu âm dương thay đổi liên tục khiến CPU khó đoán kết quả của các phép so sánh điều kiện. Điều này làm chương trình phải xử lý nhiều nhánh hơn bình thường, khiến tốc độ thực tế giảm đi.
-
 * **Test 5 (Mảng giảm dần đều):**
   * **Thuật toán mục tiêu:** Heap Sort.
   * **Cơ chế tăng thời gian:** Khi dữ liệu đảo ngược hoàn toàn, quá trình `Heapify` thường phải đổi chỗ phần tử từ gốc xuống tận cuối cây. Việc truy cập dữ liệu liên tục ở các vị trí xa nhau trong mảng làm bộ nhớ đệm hoạt động kém hiệu quả và khiến thời gian xử lý tăng lên.
