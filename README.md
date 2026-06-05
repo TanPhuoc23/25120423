@@ -1,7 +1,8 @@
 # BÁO CÁO ĐỒ ÁN SORT BENCHMARK 
 
 * **Môn học:** Cấu trúc dữ liệu và Giải thuật
-* **Lớp:** 25CTT6 
+* **Lớp:** 25CTT6
+* **Thời gian học: HK2 03-06/2026
 * **Giảng viên:**  Huỳnh Lâm Hải Đăng - Nguyễn Ngọc Đức - Phạm Trọng Nghĩa
 * **Sinh viên thực hiện:** Trần Tấn Phước - Trần Nhất Phong - Châu Thị Thảo Vân
 * **MSSV:** 25120423-25120414-25120467
